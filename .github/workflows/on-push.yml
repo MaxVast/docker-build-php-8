@@ -7,7 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BASE_IMAGE_NAME: php8.1
+      OWNER: '${{ github.repository_owner }}'
     steps:
+      - name: set lower case owner name
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
       - name: Check Out Repo
         uses: actions/checkout@v2
       - name: ghcr.io
@@ -26,7 +30,7 @@ jobs:
           push: true
           cache-from: type=registry,ref=${{ github.repository_owner }}/build-${{ env.BASE_IMAGE_NAME }}:latest
           cache-to: type=inline
-          tags: ghcr.io/${{ github.repository_owner,, }}/build-${{ env.BASE_IMAGE_NAME }}:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/build-${{ env.BASE_IMAGE_NAME }}:latest
           target: build
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -38,7 +42,7 @@ jobs:
           push: true
           cache-from: type=registry,ref=${{ github.repository_owner }}/prod-${{ env.BASE_IMAGE_NAME }}-fpm:latest
           cache-to: type=inline
-          tags: ghcr.io/${{ github.repository_owner,, }}/prod-${{ env.BASE_IMAGE_NAME }}-fpm:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/prod-${{ env.BASE_IMAGE_NAME }}-fpm:latest
           target: prod
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -50,7 +54,7 @@ jobs:
           push: true
           cache-from: type=registry,ref=${{ github.repository_owner }}/dev-${{ env.BASE_IMAGE_NAME }}-fpm:latest
           cache-to: type=inline
-          tags: ghcr.io/${{ github.repository_owner,, }}/dev-${{ env.BASE_IMAGE_NAME }}-fpm:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/dev-${{ env.BASE_IMAGE_NAME }}-fpm:latest
           target: dev
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -63,7 +67,7 @@ jobs:
           push: true
           cache-from: type=registry,ref=${{ github.repository_owner }}/build-${{ env.BASE_IMAGE_NAME }}-sqlsrv:latest
           cache-to: type=inline
-          tags: ghcr.io/${{ github.repository_owner,, }}/build-${{ env.BASE_IMAGE_NAME }}-sqlsrv:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/build-${{ env.BASE_IMAGE_NAME }}-sqlsrv:latest
           target: build-sqlsrv
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -75,7 +79,7 @@ jobs:
           push: true
           cache-from: type=registry,ref=${{ github.repository_owner }}/prod-${{ env.BASE_IMAGE_NAME }}-fpm-sqlsrv:latest
           cache-to: type=inline
-          tags: ghcr.io/${{ github.repository_owner,, }}/prod-${{ env.BASE_IMAGE_NAME }}-fpm-sqlsrv:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/prod-${{ env.BASE_IMAGE_NAME }}-fpm-sqlsrv:latest
           target: prod-sqlsrv
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -87,7 +91,7 @@ jobs:
           push: true
           cache-from: type=registry,ref=${{ github.repository_owner }}/dev-${{ env.BASE_IMAGE_NAME }}-fpm-sqlsrv:latest
           cache-to: type=inline
-          tags: ghcr.io/${{ github.repository_owner,, }}/dev-${{ env.BASE_IMAGE_NAME }}-fpm-sqlsrv:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/dev-${{ env.BASE_IMAGE_NAME }}-fpm-sqlsrv:latest
           target: dev-sqlsrv
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

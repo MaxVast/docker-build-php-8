@@ -1,0 +1,37 @@
+FROM alpine as new-alpine
+FROM php:8.1-cli-alpine3.15 as build
+
+COPY configure.sh /
+COPY conf.d/php.prod.ini /usr/local/etc/php/conf.d/php.ini
+COPY conf.d/90-xdebug.ini /usr/local/etc/php/conf.d/
+COPY --from=new-alpine /etc/ssl/cert.pem /etc/ssl/cert.pem
+
+ENV COMPOSER_DIR=/.composer \
+    SYMFONY_DIR=/.symfony
+
+RUN HOME=/ \
+    && /configure.sh \
+    && rm /configure.sh \
+    && mkdir $COMPOSER_DIR $SYMFONY_DIR \
+    && apk add --no-cache $PHPIZE_DEPS \
+    && pecl install xdebug-3.1.2 \
+    && docker-php-ext-enable xdebug \
+    && apk del $PHPIZE_DEPS \
+    && rm -r /tmp/pear/cache/* /tmp/pear/download/* \
+    # Composer
+    && curl --silent --fail-early https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    # Symfony CLI \
+    && curl -sS https://get.symfony.com/cli/installer | bash && chmod +x /.symfony/bin/symfony && mv /.symfony/bin/symfony /usr/local/bin/symfony \
+    # QA - Globally https://twitter.com/s_bergmann/status/999635212723212288
+    && wget -O phpunit https://phar.phpunit.de/phpunit-9.5.6.phar && chmod +x phpunit && mv phpunit /usr/local/bin/phpunit \
+    && wget -O php-cs-fixer-v3 https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v3.5.0/php-cs-fixer.phar && chmod +x php-cs-fixer-v3 && mv php-cs-fixer-v3 /usr/local/bin/php-cs-fixer \
+    && wget -O phpstan https://github.com/phpstan/phpstan/releases/download/1.7.14/phpstan.phar && chmod +x phpstan && mv phpstan /usr/local/bin/phpstan \
+    && chmod -R o+rwx $COMPOSER_DIR $SYMFONY_DIR
+
+WORKDIR /app
+
+FROM build as build-sqlsrv
+COPY configure-sqlsrv.sh /
+COPY conf.d/90-sqlsrv.ini /usr/local/etc/php/conf.d/
+RUN /configure-sqlsrv.sh \
+    && rm /configure-sqlsrv.sh

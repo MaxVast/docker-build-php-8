@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      BASE_IMAGE_NAME: php8.4
+      BASE_IMAGE_NAME: 8.4
       ALPINE_VERSION: 3.20
       OWNER: '${{ github.repository_owner }}'
     steps:
